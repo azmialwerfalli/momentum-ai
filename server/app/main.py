@@ -1,6 +1,7 @@
 # server/app/main.py
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from . import models
 from .database import engine
 from .routers import auth
@@ -12,7 +13,23 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Momentum AI API")
 
+#    For development, we can allow everything with "*"
+origins = [
+    "http://localhost",
+    "http://localhost:8080",
+    "http://127.0.0.1:8000",
+    # Add the specific port your Flutter web app runs on if you know it, e.g., "http://localhost:54321"
+    "*" # Using a wildcard is okay for development but should be more specific in production
+]
 
+# 3. Add the middleware to your app
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"], # Allow all methods (GET, POST, etc.)
+    allow_headers=["*"], # Allow all headers
+)
 app.include_router(auth.router)
 app.include_router(goals.router)
 app.include_router(habits.router)
