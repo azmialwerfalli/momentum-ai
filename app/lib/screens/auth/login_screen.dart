@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:momentum_app/api/api_service.dart';
 import 'package:momentum_app/screens/auth/register_screen.dart';
+import 'package:momentum_app/state/auth_provider.dart';
+import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,36 +16,26 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _apiService = ApiService();
+  // final _apiService = ApiService();
 
   bool _isLoading = false;
 
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+    // We use the provider to handle loading state and login logic
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
-      try {
-        final result = await _apiService.login(
-          email: _emailController.text,
-          password: _passwordController.text,
-        );
-
-        // TODO: Save token and navigate to dashboard
-        print('Login successful! Token: ${result['access_token']}');
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Login Successful!')));
-      } catch (e) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to login: $e')));
-      } finally {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+    try {
+      await authProvider.login(
+        _emailController.text,
+        _passwordController.text,
+      );
+      // No navigation needed here. The AuthWrapper will handle it automatically!
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to login: $e')),
+      );
+    }
     }
   }
 
@@ -56,6 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
     return Scaffold(
       appBar: AppBar(title: Text('Login to Momentum')),
       body: Padding(
@@ -90,12 +83,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 },
               ),
               SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _isLoading ? null : _login,
-                child: _isLoading
-                    ? CircularProgressIndicator(color: Colors.white)
-                    : Text('Login'),
-              ),
+        ElevatedButton(
+          onPressed: authProvider.isLoading ? null : _login,
+          child: authProvider.isLoading
+              ? CircularProgressIndicator(color: Colors.white)
+              : Text('Login'),
+        ),
               TextButton(
                 onPressed: () {
                   Navigator.of(context).push(
