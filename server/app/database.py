@@ -1,10 +1,11 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from .config import settings
 
 # Replace with your actual PostgreSQL connection details
 # Format: "postgresql://user:password@host:port/dbname"
-SQLALCHEMY_DATABASE_URL = "postgresql://postgres:P%40ssword@localhost:5432/momentum_db"
+SQLALCHEMY_DATABASE_URL = settings.database_url
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
