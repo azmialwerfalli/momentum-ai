@@ -66,3 +66,25 @@ class Habit(HabitBase):
 
     class Config:
         from_attributes = True
+
+# --- Progress Log Schemas ---
+
+class ProgressLogCreate(BaseModel):
+    habit_id: uuid.UUID
+    log_date: date
+    value_achieved: float = 1 # Default to 1 for simple completion check
+
+class ProgressLog(ProgressLogCreate):
+    log_id: uuid.UUID
+    user_id: uuid.UUID
+
+    class Config:
+        from_attributes = True
+
+
+# --- Dashboard Schema ---
+
+class DashboardHabit(BaseModel):
+    habit_id: uuid.UUID
+    title: str
+    is_completed: bool
