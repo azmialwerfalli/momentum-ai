@@ -51,6 +51,53 @@ class ApiService {
     return _handleResponse(response);
   }
 
+  // --- DASHBOARD & PROGRESS ---
+
+  // Note: The token is now required for these methods
+  Future<List<dynamic>> getDashboard(String token, DateTime date) async {
+    // Format the date to YYYY-MM-DD
+    final formattedDate =
+        "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+    final url = Uri.parse('$_baseUrl/dashboard/$formattedDate');
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token', // Send the auth token
+      },
+    );
+
+    // We are expecting a list, so handle it directly
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return json.decode(response.body);
+    } else {
+      final Map<String, dynamic> responseBody = json.decode(response.body);
+      throw Exception(responseBody['detail'] ?? 'Failed to load dashboard');
+    }
+  }
+
+  Future<Map<String, dynamic>> logProgress(
+    String token,
+    String habitId,
+    DateTime date,
+  ) async {
+    final formattedDate =
+        "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+    final url = Uri.parse('$_baseUrl/progress-logs');
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: json.encode({'habit_id': habitId, 'log_date': formattedDate}),
+    );
+
+    return _handleResponse(response);
+  }
+
   // --- HELPER FUNCTION ---
 
   Map<String, dynamic> _handleResponse(http.Response response) {
