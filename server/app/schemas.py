@@ -88,3 +88,9 @@ class DashboardHabit(BaseModel):
     habit_id: uuid.UUID
     title: str
     is_completed: bool
+
+    # --- Coaching Schemas ---
+
+class WeeklyPlan(BaseModel):
+    week: int
+    plan_details: str

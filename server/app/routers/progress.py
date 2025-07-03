@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from typing import List
 from datetime import date
 
-from .. import crud, schemas, auth, models
+from .. import crud, schemas, auth, models, coaching_engine 
 from ..database import get_db
 
 router = APIRouter(
@@ -35,3 +35,12 @@ def get_dashboard(
     current_user: schemas.User = Depends(auth.get_current_user)
 ):
     return crud.get_dashboard_for_date(db=db, user_id=current_user.user_id, target_date=target_date)
+
+    
+@router.post("/feedback/missed-habit", response_model=dict)
+def get_missed_habit_feedback(
+    reason: str | None = None, # The UI can send a reason like "asleep" or "busy"
+    current_user: schemas.User = Depends(auth.get_current_user)
+):
+    advice = coaching_engine.get_missed_prayer_advice(reason=reason)
+    return {"feedback": advice}
