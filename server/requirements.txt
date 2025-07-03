@@ -4,7 +4,9 @@ uvicorn[standard]
 sqlalchemy
 psycopg2-binary
 python-jose[cryptography]
-passlib[bcrypt]
 python-multipart
 pydantic[email]
 pydantic-settings
+
+# Authentication & Hashing
+passlib[bcrypt]
