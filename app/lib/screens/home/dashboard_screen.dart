@@ -59,6 +59,70 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  Future<void> _handleMissedHabit(DashboardHabit habit) async {
+    // 1. Show a dialog to ask for the reason
+    final reason = await showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return SimpleDialog(
+          title: const Text('Why was this habit missed?'),
+          children: <Widget>[
+            SimpleDialogOption(
+              onPressed: () {
+                Navigator.pop(context, 'busy');
+              },
+              child: const Text('I was too busy'),
+            ),
+            SimpleDialogOption(
+              onPressed: () {
+                Navigator.pop(context, 'asleep');
+              },
+              child: const Text('I was asleep'),
+            ),
+            SimpleDialogOption(
+              onPressed: () {
+                Navigator.pop(context, 'unmotivated');
+              },
+              child: const Text('Felt unmotivated'),
+            ),
+          ],
+        );
+      },
+    );
+
+    // 2. If the user selected a reason, call the API
+    if (reason != null) {
+      final token = Provider.of<AuthProvider>(context, listen: false).token;
+      if (token == null) return;
+
+      try {
+        final result = await _apiService.getMissedHabitFeedback(
+          token,
+          habit.habitId,
+          reason,
+        );
+        final feedback = result['feedback'];
+
+        // 3. Show the AI feedback in a SnackBar or another dialog
+        if (mounted) {
+          // Check if the widget is still in the tree
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Coach says: $feedback'),
+              duration: Duration(seconds: 5), // Make it a bit longer
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Failed to get feedback: $e')));
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -96,6 +160,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: ListTile(
                   title: Text(habit.title),
+                  // The onTap for the ListTile itself
+                  onTap: () {
+                    // We can use the main tap area for toggling completion too
+                    _toggleHabitCompletion(habit);
+                  },
+                  // The NEW long press gesture
+                  onLongPress: () {
+                    // If a habit isn't done, you can mark it as missed
+                    if (!habit.isCompleted) {
+                      _handleMissedHabit(habit);
+                    }
+                  },
                   trailing: Checkbox(
                     value: habit.isCompleted,
                     onChanged: (bool? value) {

@@ -98,6 +98,28 @@ class ApiService {
     return _handleResponse(response);
   }
 
+  // ... Missed Habit ...
+
+  Future<Map<String, dynamic>> getMissedHabitFeedback(
+    String token,
+    String habitId,
+    String reason,
+  ) async {
+    final url = Uri.parse(
+      '$_baseUrl/feedback/missed-habit',
+    ); // URL no longer needs the reason
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      // Send a JSON body instead of a query parameter
+      body: json.encode({'habit_id': habitId, 'reason': reason}),
+    );
+
+    return _handleResponse(response);
+  }
   // --- GOALS ---
 
   Future<List<dynamic>> getGoals(String token) async {

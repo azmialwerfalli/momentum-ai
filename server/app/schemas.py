@@ -67,6 +67,11 @@ class Habit(HabitBase):
     class Config:
         from_attributes = True
 
+# --- missed habit ---   
+class MissedHabitFeedbackRequest(BaseModel):
+    habit_id: uuid.UUID
+    reason: str | None = None
+    
 # --- Progress Log Schemas ---
 
 class ProgressLogCreate(BaseModel):

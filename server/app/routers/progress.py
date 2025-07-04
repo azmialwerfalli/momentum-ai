@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from datetime import date
+import uuid
 
 from .. import crud, schemas, auth, models, coaching_engine 
 from ..database import get_db
@@ -39,8 +40,24 @@ def get_dashboard(
     
 @router.post("/feedback/missed-habit", response_model=dict)
 def get_missed_habit_feedback(
-    reason: str | None = None, # The UI can send a reason like "asleep" or "busy"
+    request: schemas.MissedHabitFeedbackRequest, # Use the new request model
+    db: Session = Depends(get_db),
     current_user: schemas.User = Depends(auth.get_current_user)
 ):
-    advice = coaching_engine.get_missed_prayer_advice(reason=reason)
+    # Find the habit in the DB to get its title
+    habit = db.query(models.Habit).filter(
+        models.Habit.habit_id == request.habit_id,
+        models.Habit.user_id == current_user.user_id
+    ).first()
+
+
+    if not habit:
+        raise HTTPException(status_code=404, detail="Habit not found")
+
+    # Call the new, smarter coaching engine function
+    advice = coaching_engine.get_missed_habit_feedback(
+        habit_title=habit.title, 
+        reason=request.reason
+    )
+
     return {"feedback": advice}

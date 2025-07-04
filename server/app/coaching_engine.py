@@ -25,15 +25,28 @@ def generate_running_plan(current_week: int):
     else:
         return {"week": current_week, "plan_details": "Congratulations on finishing the program! Or, invalid week number."}
 
-def get_missed_prayer_advice(reason: str | None):
+def get_missed_habit_feedback(habit_title: str, reason: str | None):
     """
     Provides compassionate advice for a missed prayer.
     """
-    if reason == 'asleep':
-        return "It's okay, these things happen. The Prophet (PBUH) taught us to perform the prayer as soon as we remember. Let's make the intention to perform the Qada prayer now."
-    elif reason == 'busy':
-        return "Allah understands our struggles. Take a few moments to find a quiet space and perform your Qada prayer. A short break for prayer can bring great peace."
+    title_lower = habit_title.lower()
+
+    # Check if it's a spiritual habit
+    if 'prayer' in title_lower or 'quran' in title_lower or 'salah' in title_lower:
+        if reason == 'asleep':
+            return "It's okay, these things happen. The Prophet (PBUH) taught us to perform the prayer as soon as we remember. Let's make the intention to perform the Qada prayer now."
+        elif reason == 'busy':
+            return "Allah understands our struggles. Take a few moments for your Qada prayer. A short break for prayer can bring great peace."
+        else:
+            return "Don't be discouraged. The most important thing is to turn back to Allah. Perform your Qada prayer as soon as you are able."
+    
+    # Otherwise, it's a general/physical/mental habit
     else:
-        return "Don't be discouraged. The most important thing is to turn back to Allah. Perform your Qada prayer as soon as you are able."
+        if reason == 'busy':
+            return "Life gets hectic. Don't let one missed session stop you. Can we reschedule for later today, or just focus on being ready for tomorrow?"
+        elif reason == 'unmotivated':
+            return "Motivation is a wave, it comes and goes. Discipline is what builds the shore. We missed today, but the real win is showing up tomorrow. Let's do it."
+        else:
+            return "One step back is okay as long as the next step is forward. Acknowledge it, let it go, and prepare for your next success."
 
 # We can add more coaching functions here later...
