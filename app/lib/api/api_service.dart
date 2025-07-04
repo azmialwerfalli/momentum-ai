@@ -98,6 +98,42 @@ class ApiService {
     return _handleResponse(response);
   }
 
+  // --- GOALS ---
+
+  Future<List<dynamic>> getGoals(String token) async {
+    final url = Uri.parse('$_baseUrl/goals');
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return json.decode(response.body);
+    } else {
+      final Map<String, dynamic> responseBody = json.decode(response.body);
+      throw Exception(responseBody['detail'] ?? 'Failed to load goals');
+    }
+  }
+
+  Future<Map<String, dynamic>> generatePlanForGoal(
+    String token,
+    String goalId,
+  ) async {
+    final url = Uri.parse('$_baseUrl/goals/$goalId/generate-plan');
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    return _handleResponse(response);
+  }
+
   // --- HELPER FUNCTION ---
 
   Map<String, dynamic> _handleResponse(http.Response response) {

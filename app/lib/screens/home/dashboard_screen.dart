@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:momentum_app/api/api_service.dart';
 import 'package:momentum_app/models/dashboard_habit.dart';
+import 'package:momentum_app/screens/goals/goals_list_screen.dart';
 import 'package:momentum_app/state/auth_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -106,6 +107,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
             },
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (context) => GoalsListScreen()));
+        },
+        tooltip: 'My Goals',
+        child: Icon(Icons.track_changes),
       ),
     );
   }
