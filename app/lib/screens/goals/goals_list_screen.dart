@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:momentum_app/api/api_service.dart';
 import 'package:momentum_app/models/goal.dart';
+import 'package:momentum_app/screens/goals/add_goal_screen.dart';
 import 'package:momentum_app/screens/goals/goal_detail_screen.dart'; // We'll create this next
 import 'package:momentum_app/state/auth_provider.dart';
 import 'package:provider/provider.dart';
@@ -17,19 +18,40 @@ class _GoalsListScreenState extends State<GoalsListScreen> {
   late Future<List<Goal>> _goalsFuture;
   final ApiService _apiService = ApiService();
 
+  void _refreshGoals() {
+    final token = Provider.of<AuthProvider>(context, listen: false).token;
+    if (token != null) {
+      setState(() {
+        _goalsFuture = _apiService
+            .getGoals(token)
+            .then((data) => data.map((item) => Goal.fromJson(item)).toList());
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    final token = Provider.of<AuthProvider>(context, listen: false).token;
-    _goalsFuture = _apiService
-        .getGoals(token!)
-        .then((data) => data.map((item) => Goal.fromJson(item)).toList());
+    _refreshGoals();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('My Goals')),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final result = await Navigator.of(context).push<bool>(
+            MaterialPageRoute(builder: (context) => AddGoalScreen()),
+          );
+          // If we got a 'true' result back, refresh the list
+          if (result == true) {
+            _refreshGoals();
+          }
+        },
+        tooltip: 'Add Goal',
+        child: Icon(Icons.add),
+      ),
       body: FutureBuilder<List<Goal>>(
         future: _goalsFuture,
         builder: (context, snapshot) {

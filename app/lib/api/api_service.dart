@@ -156,6 +156,67 @@ class ApiService {
     return _handleResponse(response);
   }
 
+  // ... Generate GOALS and Habits ...
+
+  Future<Map<String, dynamic>> createGoal(
+    String token, {
+    required String title,
+    String? description,
+    required String goalType, // e.g., 'TARGET_VALUE'
+    double? targetValue,
+    String? targetUnit,
+    String? targetDate, // YYYY-MM-DD format
+  }) async {
+    final url = Uri.parse('$_baseUrl/goals');
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: json.encode({
+        'title': title,
+        'description': description,
+        'goal_type': goalType,
+        'target_value': targetValue,
+        'target_unit': targetUnit,
+        'target_date': targetDate,
+      }),
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> createHabit(
+    String token, {
+    required String title,
+    required String goalId,
+  }) async {
+    final url = Uri.parse('$_baseUrl/habits');
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: json.encode({'title': title, 'goal_id': goalId}),
+    );
+    return _handleResponse(response);
+  }
+
+  // --- Goal Habits  ---
+  Future<List<dynamic>> getHabitsForGoal(String token, String goalId) async {
+    final url = Uri.parse('$_baseUrl/habits/by_goal/$goalId');
+    final response = await http.get(
+      url,
+      headers: {'Authorization': 'Bearer $token'},
+    );
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to load habits');
+    }
+  }
+
   // --- HELPER FUNCTION ---
 
   Map<String, dynamic> _handleResponse(http.Response response) {

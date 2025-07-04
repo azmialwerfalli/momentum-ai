@@ -70,7 +70,15 @@ def log_progress_for_habit(db: Session, log: schemas.ProgressLogCreate, user_id:
 
 def get_dashboard_for_date(db: Session, user_id: uuid.UUID, target_date: date):
     # 1. Get all of the user's active habits
-    user_habits = db.query(models.Habit).filter(models.Habit.user_id == user_id).all()
+    user_habits = (
+        db.query(models.Habit)
+        .join(models.Goal, models.Habit.goal_id == models.Goal.goal_id)
+        .filter(
+            models.Habit.user_id == user_id,
+            models.Goal.status == 'active'  # Only get habits from 'active' goals!
+        )
+        .all()
+    )
 
     # 2. Get all progress logs for that specific day
     logs_for_day = db.query(models.ProgressLog).filter(
@@ -84,6 +92,9 @@ def get_dashboard_for_date(db: Session, user_id: uuid.UUID, target_date: date):
     # 3. Build the dashboard response
     dashboard_data = []
     for habit in user_habits:
+        # Here we could add logic for weekly habits, e.g.:
+        # if habit.frequency_type == 'weekly' and target_date.weekday() not in habit.days_of_week:
+        #     continue # Skip this habit if it's not for today
         dashboard_data.append(
             schemas.DashboardHabit(
                 habit_id=habit.habit_id,
@@ -91,4 +102,5 @@ def get_dashboard_for_date(db: Session, user_id: uuid.UUID, target_date: date):
                 is_completed=(habit.habit_id in completed_habit_ids)
             )
         )
+
     return dashboard_data
